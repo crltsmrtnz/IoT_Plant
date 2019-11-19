@@ -12,8 +12,8 @@ from pubnub.enums import PNOperationType, PNStatusCategory
 
  
 pnconfig = PNConfiguration()
-pnconfig.subscribe_key = "sub-c-a667485c-757f-11e8-9f59-fec9626a7085"
-pnconfig.publish_key = "pub-c-cb2e18e3-a8b0-486a-bf82-2d9e9f670b7e"
+pnconfig.subscribe_key = "sub-c-a8b00aae-fc15-11e9-8dd7-ca99873d233c"
+pnconfig.publish_key = "pub-c-6ef5a380-dd54-42b6-939b-4add2100aed1"
 pnconfig.ssl = False
  
 pubnub = PubNub(pnconfig)
@@ -82,57 +82,57 @@ class MySubscribeCallback(SubscribeCallback):
  
     def message(self, pubnub, message):
         if message.message == 'ON':
-        	global flag
-        	flag = 1
+            global flag
+            flag = 1
         elif message.message == 'OFF':
-			global flag
-			flag = 0
+            global flag
+            flag = 0
         elif message.message == 'WATER':
-        	pump.off()
-        	sleep(5)
-        	pump.on()
+            pump.off()
+            sleep(5)
+            pump.on()
  
  
 pubnub.add_listener(MySubscribeCallback())
 pubnub.subscribe().channels('ch1').execute()
 
 def publish_callback(result, status):
-	pass
+    pass
 
 def get_status():
-	if soil.is_held:
-		print("dry")
-		return True
-	else:
-		print("wet")
-		return False
+    if soil.is_held:
+        print("dry")
+        return True
+    else:
+        print("wet")
+        return False
 
 
 while True:
-	if flag ==1:
-		# Try to grab a sensor reading.  Use the read_retry method which will retry up
-		# to 15 times to get a sensor reading (waiting 2 seconds between each retry).
-		humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
-		DHT_Read = ('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))
-		print(DHT_Read)
+    if flag ==1:
+        # Try to grab a sensor reading.  Use the read_retry method which will retry up
+        # to 15 times to get a sensor reading (waiting 2 seconds between each retry).
+        humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
+        DHT_Read = ('Temp={0:0.1f}*  Humidity={1:0.1f}%'.format(temperature, humidity))
+        print(DHT_Read)
 
-		dictionary = {"eon": {"Temperature": temperature, "Humidity": humidity}}
-		pubnub.publish().channel('ch2').message([DHT_Read]).async(publish_callback)
-		pubnub.publish().channel("eon-chart").message(dictionary).async(publish_callback)
+        dictionary = {"eon": {"Temperature": temperature, "Humidity": humidity}}
+        pubnub.publish().channel('ch2').message([DHT_Read]).async(publish_callback)
+        pubnub.publish().channel("eon-chart").message(dictionary).async(publish_callback)
 
-		wet = get_status()
-		
-		if wet == True:
-		    print("turning on")
-		    pump.off()
-		    sleep(5)
-		    print("pump turning off")
-		    pump.on()
-		    sleep(1)
-		else:
-		    pump.on()
+        wet = get_status()
+        
+        if wet == True:
+            print("turning on")
+            pump.off()
+            sleep(5)
+            print("pump turning off")
+            pump.on()
+            sleep(1)
+        else:
+            pump.on()
 
-		sleep(1)
-	elif flag == 0:
-		pump.on()
-		sleep(3)
+        sleep(1)
+    elif flag == 0:
+        pump.on()
+        sleep(3)
